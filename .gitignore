@@ -1,0 +1,10 @@
+*.pyc
+*_tmp_
+AlphaPose/
+detectron/
+hmr/
+hmr_models/
+LIP_JPPNet/
+smplify_public/
+.idea/
+.fuse*
