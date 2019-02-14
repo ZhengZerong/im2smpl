@@ -282,9 +282,163 @@ def optimize_on_joints(j2d,
     return sv, cam.r, cam.t.r
 
 
+def optimize_on_joints_and_silhouette(j2d,
+                                      sil,
+                                      model,
+                                      cam,
+                                      img,
+                                      prior,
+                                      init_pose,
+                                      init_shape,
+                                      n_betas=10,
+                                      conf=None):
+    """Fit the model to the given set of joints, given the estimated camera
+    :param j2d: 14x2 array of CNN joints
+    :param sil: h x w silhouette with soft boundaries (np.float32, range(-1, 1))
+    :param model: SMPL model
+    :param cam: estimated camera
+    :param img: h x w x 3 image
+    :param prior: mixture of gaussians pose prior
+    :param init_pose: 72D vector, pose prediction results provided by HMR
+    :param init_shape: 10D vector, shape prediction results provided by HMR
+    :param n_betas: number of shape coefficients considered during optimization
+    :param conf: 14D vector storing the confidence values from the CNN
+    :returns: a tuple containing the optimized model, its joints projected on image space, the
+              camera translation
+    """
+    # define the mapping LSP joints -> SMPL joints
+    cids = range(12) + [13]
+    smpl_ids = [8, 5, 2, 1, 4, 7, 21, 19, 17, 16, 18, 20]
+    head_id = 411
+
+    # weights assigned to each joint during optimization;
+    # the definition of hips in SMPL and LSP is significantly different so set
+    # their weights to zero
+    base_weights = np.array([1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=np.float64)
+
+    betas = ch.array(init_shape)
+
+    # instantiate the model:
+    sv = verts_decorated(
+        trans=ch.zeros(3),
+        pose=ch.array(init_pose),
+        v_template=model.v_template,
+        J=model.J_regressor,
+        betas=betas,
+        shapedirs=model.shapedirs[:, :, :n_betas],
+        weights=model.weights,
+        kintree_table=model.kintree_table,
+        bs_style=model.bs_style,
+        f=model.f,
+        bs_type=model.bs_type,
+        posedirs=model.posedirs)
+
+    # make the SMPL joints depend on betas
+    Jdirs = np.dstack([model.J_regressor.dot(model.shapedirs[:, :, i])
+                       for i in range(len(betas))])
+    J_onbetas = ch.array(Jdirs).dot(betas) + model.J_regressor.dot(
+        model.v_template.r)
+
+    # get joint positions as a function of model pose, betas and trans
+    (_, A_global) = global_rigid_transformation(
+        sv.pose, J_onbetas, model.kintree_table, xp=ch)
+    Jtr = ch.vstack([g[:3, 3] for g in A_global]) + sv.trans
+
+    # add the head joint
+    Jtr = ch.vstack((Jtr, sv[head_id]))
+    smpl_ids.append(len(Jtr) - 1)
+
+    # update the weights using confidence values
+    weights = base_weights * conf[cids] if conf is not None else base_weights
+
+    # project SMPL joints and vertex on the image plane using the estimated camera
+    cam.v = ch.vstack([Jtr, sv])
+
+    # obtain a gradient map of the soft silhouette
+    grad_x = cv2.Sobel(sil, cv2.CV_32FC1, 1, 0) * 0.125
+    grad_y = cv2.Sobel(sil, cv2.CV_32FC1, 0, 1) * 0.125
+
+    # data term #1: distance between observed and estimated joints in 2D
+    obj_j2d = lambda w, sigma: (
+        w * weights.reshape((-1, 1)) * GMOf((j2d[cids] - cam[smpl_ids]), sigma)
+    )
+
+    # data term #2: distance between the observed and projected boundaries
+    obj_s2d = lambda w, sigma, flag, target_pose : (
+        w * flag * GMOf((target_pose - cam[len(Jtr):(len(Jtr)+6890)]), sigma)
+    )
+
+    # mixture of gaussians pose prior
+    pprior = lambda w: w * prior(sv.pose)
+    # joint angles pose prior, defined over a subset of pose parameters:
+    # 55: left elbow,  90deg bend at -np.pi/2
+    # 58: right elbow, 90deg bend at np.pi/2
+    # 12: left knee,   90deg bend at np.pi/2
+    # 15: right knee,  90deg bend at np.pi/2
+    alpha = 10
+    my_exp = lambda x: alpha * ch.exp(x)
+    obj_angle = lambda w: w * ch.concatenate([my_exp(sv.pose[55]), my_exp(-sv.pose[58]),
+                                              my_exp(-sv.pose[12]), my_exp(-sv.pose[15])])
+
+
+    # run the optimization in 4 stages, progressively decreasing the
+    # weights for the priors
+    print('****** Optimization on joints')
+    opt_weights = zip([4.04 * 1e2, 4.04 * 1e2, 57.4, 4.78],
+                      [1e2, 5 * 1e1, 1e1, .5 * 1e1])
+    for stage, (w, wbetas) in enumerate(opt_weights):
+        _LOGGER.info('stage %01d', stage)
+        objs = {}
+        objs['j2d'] = obj_j2d(1., 100)
+        objs['pose'] = pprior(w)
+        objs['pose_exp'] = obj_angle(0.317 * w)
+        objs['betas'] = wbetas * betas
+
+        ch.minimize(objs, x0=[sv.betas, sv.pose],
+                    method='dogleg', callback=None,
+                    options={'maxiter': 100, 'e_3': .0001, 'disp': 0})
+    curr_pose = sv.pose.r
+    # cam.v = ch.vstack([Jtr, sv.r])
+
+    # run the optimization in 2 stages, progressively decreasing the
+    # weights for the priors
+    print('****** Optimization on silhouette and joints')
+    opt_weights = zip([57.4, 4.78], [2e1, 1e1])
+    for stage, (w, wbetas) in enumerate(opt_weights):
+        _LOGGER.info('stage %01d', stage)
+        # find the boundary vertices and estimate their expected location
+        smpl_vs = cam.r[len(Jtr):, :]
+        boundary_flag = np.zeros((smpl_vs.shape[0], 1))
+        expected_pos = np.zeros((smpl_vs.shape[0], 2))
+        for vi, v in enumerate(smpl_vs):
+            r, c = int(v[1]), int(v[0])
+            sil_v = sil[r, c]
+            grad = np.array([grad_x[r, c], grad_y[r, c]])
+            grad_n = np.linalg.norm(grad)
+            if grad_n > 1e-1 and sil_v < 0.4:   # vertex on or out of the boundaries
+                boundary_flag[vi] = 1.0
+                step = (grad/grad_n) * (sil_v/grad_n)
+                expected_pos[vi] = np.array([c - step[0], r - step[1]])
+
+        # run optimization
+        objs = {}
+        objs['j2d'] = obj_j2d(1., 100)
+        objs['s2d'] = obj_s2d(5., 100, boundary_flag, expected_pos)
+        objs['pose'] = pprior(w)
+        objs['pose_exp'] = obj_angle(0.317 * w)
+        objs['betas'] = wbetas * betas  # constrain beta changes
+        objs['thetas'] = wbetas * (sv.pose - curr_pose) # constrain theta changes
+        ch.minimize(objs, x0=[sv.betas, sv.pose],
+                    method='dogleg', callback=None,
+                    options={'maxiter': 100, 'e_3': .0001, 'disp': 0})
+
+    return sv, cam.r, cam.t.r
+
+
 def run_single_fit(img,
                    j2d,
                    conf,
+                   seg,
                    model,
                    init_pose,
                    init_shape,
@@ -294,6 +448,7 @@ def run_single_fit(img,
     :param img: h x w x 3 image
     :param j2d: 14x2 array of CNN joints
     :param conf: 14D vector storing the confidence values from the CNN
+    :param seg: h x w soft silhouette
     :param model: SMPL model
     :param init_pose: 72D vector, pose prediction results provided by HMR
     :param init_shape: 10D vector, shape prediction results provided by HMR
@@ -313,10 +468,14 @@ def run_single_fit(img,
                                            init_pose, flength=flength)
 
     # fit
-    print('**** Run body model optimization')
-    (sv, opt_j2d, t) = optimize_on_joints(j2d, model, cam, img, prior,
-                                          init_pose, init_shape,
-                                          n_betas=n_betas, conf=conf)
+    # print('**** Run body model optimization (on joints)')
+    # (sv, opt_j2d, t) = optimize_on_joints(j2d, model, cam, img, prior,
+    #                                       init_pose, init_shape,
+    #                                       n_betas=n_betas, conf=conf)
+    print('**** Run body model optimization (on silhouette and joints)')
+    (sv, opt_j2d, t) = optimize_on_joints_and_silhouette(j2d, seg, model, cam, img, prior,
+                                                         init_pose, init_shape,
+                                                         n_betas=n_betas, conf=conf)
 
     # return fit parameters
     params = {'cam_t': cam.t.r,
@@ -380,7 +539,9 @@ def main(img_dir, joint_dir, joint_scores_dir, seg_dir, smpl_param_dir, smpl_dir
 
     seg = cv2.imread(seg_dir)
     if len(seg.shape) == 3:
-        seg = np.sum(seg, axis=-1)
+        seg = cv2.cvtColor(seg, cv2.COLOR_RGB2GRAY)
+    seg = np.array(seg, np.float32)/255.0
+    seg = cv2.blur(seg, (15, 15))*2.0 - 1.0
 
     print('** Read initial SMPL params from ' + smpl_param_dir)
     init_pose = np.zeros(72, dtype=np.float32)
@@ -409,7 +570,7 @@ def main(img_dir, joint_dir, joint_scores_dir, seg_dir, smpl_param_dir, smpl_dir
     # cv2.waitKey()
 
     print('** Run fitting')
-    params = run_single_fit(img, j2d, conf, model, init_pose, init_shape)
+    params = run_single_fit(img, j2d, conf, seg, model, init_pose, init_shape)
 
     img_dir, img_name = os.path.split(img_fname)
     out_fname = os.path.join(out_dir, img_name+'.final.txt')
@@ -430,6 +591,8 @@ def main(img_dir, joint_dir, joint_scores_dir, seg_dir, smpl_param_dir, smpl_dir
                              params['betas'], params['f'], params['cam_t'])
     cv2.imshow('img', img)
     cv2.imwrite(os.path.join(out_dir, img_name+'.smpl_proj.png'), img)
+    cv2.imwrite(os.path.join(out_dir, img_name+'.soft_mask.png'),
+                np.uint8(seg*127+127))
     cv2.waitKey()
     with open(os.path.join(out_dir, img_name+'.smpl.obj'), 'w') as fp:
         for v in model.r:

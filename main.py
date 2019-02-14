@@ -156,9 +156,9 @@ def main(img_fname, out_dir):
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    detect_human(img_fname, out_dir)
-    crop_or_pad_img(img_fname, out_dir)
-    infer_smpl_and_pose(img_fname, out_dir)
+    # detect_human(img_fname, out_dir)
+    # crop_or_pad_img(img_fname, out_dir)
+    # infer_smpl_and_pose(img_fname, out_dir)
     optimize_smpl(img_fname, out_dir)
 
 
