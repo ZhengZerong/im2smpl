@@ -27,6 +27,12 @@ Or modify the parameters in the provided script `main.sh` and simply run:
 ```sh
 sh main.sh
 ```
+### Results
+(See `./example/` for more details. )
+<p align="center">
+<img src="./example/1.png.smpl_proj.png" title="SMPL reprojection" height="400", style="max-width:40%;vertical-align:top"> 
+<img src="./example/1.png.meshlab.png" title="Output Mesh" height="400", style="max-width:40%;vertical-align:top"> 
+</p>
 
 ### Citation
 If you find the code useful in your work, you should cite the following papers:
