@@ -589,6 +589,7 @@ def main(img_dir, joint_dir, joint_scores_dir, seg_dir, smpl_param_dir, smpl_dir
             fp.write('%f ' % v)
     img = proj_smpl_onto_img(img, model, params['pose'],
                              params['betas'], params['f'], params['cam_t'])
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     cv2.imshow('img', img)
     cv2.imwrite(os.path.join(out_dir, img_name+'.smpl_proj.png'), img)
     cv2.imwrite(os.path.join(out_dir, img_name+'.soft_mask.png'),
