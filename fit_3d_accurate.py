@@ -46,6 +46,8 @@ from smpl_webuser.verts import verts_decorated
 from lib.max_mixture_prior import MaxMixtureCompletePrior
 
 
+flength = 5000.
+
 _LOGGER = logging.getLogger(__name__)
 
 # Mapping from LSP joints to SMPL joints.
@@ -110,7 +112,7 @@ def initialize_camera(model,
                       j2d,
                       img,
                       init_pose,
-                      flength=5000.):
+                      flength=flength):
     """Initialize camera translation and body orientation
     :param model: SMPL model
     :param j2d: 14x2 array of CNN joints
@@ -403,7 +405,7 @@ def optimize_on_joints_and_silhouette(j2d,
     # run the optimization in 2 stages, progressively decreasing the
     # weights for the priors
     print('****** Optimization on silhouette and joints')
-    opt_weights = zip([57.4, 4.78], [2e1, 1e1])
+    opt_weights = zip([57.4, 4.78], [2e2, 1e2])
     for stage, (w, wbetas) in enumerate(opt_weights):
         _LOGGER.info('stage %01d', stage)
         # find the boundary vertices and estimate their expected location
@@ -443,7 +445,7 @@ def run_single_fit(img,
                    init_pose,
                    init_shape,
                    n_betas=10,
-                   flength=5000.):
+                   flength=flength):
     """Run the fit for one specific image.
     :param img: h x w x 3 image
     :param j2d: 14x2 array of CNN joints
@@ -541,7 +543,7 @@ def main(img_dir, joint_dir, joint_scores_dir, seg_dir, smpl_param_dir, smpl_dir
     if len(seg.shape) == 3:
         seg = cv2.cvtColor(seg, cv2.COLOR_RGB2GRAY)
     seg = np.array(seg, np.float32)/255.0
-    seg = cv2.blur(seg, (15, 15))*2.0 - 1.0
+    seg = cv2.blur(seg, (15, 15))*2.0 - 1.25
 
     print('** Read initial SMPL params from ' + smpl_param_dir)
     init_pose = np.zeros(72, dtype=np.float32)
@@ -590,11 +592,11 @@ def main(img_dir, joint_dir, joint_scores_dir, seg_dir, smpl_param_dir, smpl_dir
     img = proj_smpl_onto_img(img, model, params['pose'],
                              params['betas'], params['f'], params['cam_t'])
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    cv2.imshow('img', img)
     cv2.imwrite(os.path.join(out_dir, img_name+'.smpl_proj.png'), img)
     cv2.imwrite(os.path.join(out_dir, img_name+'.soft_mask.png'),
                 np.uint8(seg*127+127))
-    cv2.waitKey()
+    # cv2.imshow('img', img)
+    # cv2.waitKey()
     with open(os.path.join(out_dir, img_name+'.smpl.obj'), 'w') as fp:
         for v in model.r:
             fp.write( 'v %f %f %f\n' % ( v[0], v[1], v[2]) )

@@ -46,7 +46,7 @@ def parse_args():
 
 def detect_human(fname, out_dir):
     """ obtains bounding box of the subject in the input image"""
-    print('Step 1. Human Detection RCNN')
+    print('\n\nStep 1. Human Detection RCNN')
     # generate a temporal script to call RCNN
     shutil.copy('./detect_human.py', './AlphaPose/human-detection/tools/')
     with open('temp_step_1.sh', 'w') as fp:
@@ -64,7 +64,7 @@ def crop_or_pad_img(fname, out_dir):
     """ crops or pads the original image to make the subject located at the center
         of the image and occupy 90% of the image
     """
-    print('Step 2. Image cropping or padding')
+    print('\n\nStep 2. Image cropping or padding')
     img_dir, img_name = os.path.split(img_fname)
     with open(os.path.join(out_dir, img_name + '.bbox.txt'), 'r') as fp:
         lines = fp.readlines()
@@ -96,7 +96,7 @@ def crop_or_pad_img(fname, out_dir):
 
 
 def infer_smpl_and_pose(fname, out_dir):
-    print('Step 3a Body model estimation using HMR. ')
+    print('\n\nStep 3a Body model estimation using HMR. ')
     shutil.copy('./infer_smpl.py', './hmr/')
     with open('temp_step_3a.sh', 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
@@ -107,7 +107,7 @@ def infer_smpl_and_pose(fname, out_dir):
     os.remove('./temp_step_3a.sh')
     os.remove('./hmr/infer_smpl.py')
 
-    print('Step 3b Pose estimation using AlphaPose')
+    print('\n\nStep 3b Pose estimation using AlphaPose')
     img_dir, img_name = os.path.split(img_fname)
     tmp_folder = ''.join(random.sample(string.ascii_letters + string.digits, 8))
     os.mkdir(os.path.join('./AlphaPose/examples', tmp_folder))
@@ -123,7 +123,7 @@ def infer_smpl_and_pose(fname, out_dir):
           os.path.join(out_dir, img_name+'.joint_scores.txt')])
     call(['rm', '-r', os.path.join('./AlphaPose/examples', tmp_folder)])
 
-    print('Step 3c Image segmentation')
+    print('\n\nStep 3c Image segmentation')
     shutil.copy('./segment_by_parsing.py', './LIP_JPPNet/')
     with open('temp_step_3c.sh', 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
@@ -136,7 +136,7 @@ def infer_smpl_and_pose(fname, out_dir):
 
 
 def optimize_smpl(fname, out_dir):
-    print('Step 4 SMPL model optimization')
+    print('\n\nStep 4 SMPL model optimization')
     shutil.copy('./fit_3d_accurate.py', './smplify_public/code/')
     with open('temp_step_4.sh', 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
