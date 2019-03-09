@@ -414,6 +414,8 @@ def optimize_on_joints_and_silhouette(j2d,
         expected_pos = np.zeros((smpl_vs.shape[0], 2))
         for vi, v in enumerate(smpl_vs):
             r, c = int(v[1]), int(v[0])
+            if r < 0 or r >= sil.shape[0] or c < 0 or c >= sil.shape[1]:
+                continue
             sil_v = sil[r, c]
             grad = np.array([grad_x[r, c], grad_y[r, c]])
             grad_n = np.linalg.norm(grad)
