@@ -36,6 +36,10 @@ import random
 import string
 import shutil
 from subprocess import call
+import time
+import pynvml
+
+pynvml.nvmlInit()
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -44,20 +48,41 @@ def parse_args():
     return parser.parse_args()
 
 
+def waitgpu(empty_thres_duration=10):
+    empty_flag = 0
+    while True:
+        handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+        meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+        usage_percent = float(meminfo.used)/float(meminfo.total)
+        if usage_percent < 0.1:
+            if empty_flag >= empty_thres_duration:   # empty for 5 second
+                break
+            empty_flag += 1
+            time.sleep(1)
+            continue
+        empty_flag = 0
+        print('GPU is busy right now....waiting....')
+        print('meminfo.used/meminfo.total = %f' % usage_percent)
+        time.sleep(np.random.randint(5, 15))
+
+
 def detect_human(fname, out_dir):
     """ obtains bounding box of the subject in the input image"""
+    waitgpu()
     print('\n\nStep 1. Human Detection RCNN')
     # generate a temporal script to call RCNN
     shutil.copy('./detect_human.py', './AlphaPose/human-detection/tools/')
-    with open('temp_step_1.sh', 'w') as fp:
+    temp_shname = ''.join(random.sample(string.ascii_letters + string.digits, 8)) + '.sh'
+    temp_shname = os.path.join('./', temp_shname)
+    with open(temp_shname, 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
         fp.write('cd ./AlphaPose/human-detection/tools\n')
         fp.write('python detect_human.py --img_file %s --out_dir %s\n'
                  % (fname, out_dir))
         fp.write('cd ../../../\n')
-    call(['sh', './temp_step_1.sh'])
-    os.remove('./temp_step_1.sh')
-    os.remove('./AlphaPose/human-detection/tools/detect_human.py')
+    call(['sh', temp_shname])
+    os.remove(temp_shname)
+    # os.remove('./AlphaPose/human-detection/tools/detect_human.py')
 
 
 def crop_or_pad_img(fname, out_dir):
@@ -96,16 +121,19 @@ def crop_or_pad_img(fname, out_dir):
 
 
 def infer_smpl_and_pose(fname, out_dir):
+    waitgpu()
     print('\n\nStep 3a Body model estimation using HMR. ')
     shutil.copy('./infer_smpl.py', './hmr/')
-    with open('temp_step_3a.sh', 'w') as fp:
+    temp_shname = ''.join(random.sample(string.ascii_letters + string.digits, 8)) + '.sh'
+    temp_shname = os.path.join('./', temp_shname)
+    with open(temp_shname, 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
         fp.write('cd ./hmr/\n')
         fp.write('python infer_smpl.py --img_path %s --out_dir %s\n' % (fname, out_dir))
         fp.write('cd ../\n')
-    call(['sh', './temp_step_3a.sh'])
-    os.remove('./temp_step_3a.sh')
-    os.remove('./hmr/infer_smpl.py')
+    call(['sh', temp_shname])
+    os.remove(temp_shname)
+    # os.remove('./hmr/infer_smpl.py')
 
     print('\n\nStep 3b Pose estimation using AlphaPose')
     img_dir, img_name = os.path.split(img_fname)
@@ -125,27 +153,31 @@ def infer_smpl_and_pose(fname, out_dir):
 
     print('\n\nStep 3c Image segmentation')
     shutil.copy('./segment_by_parsing.py', './LIP_JPPNet/')
-    with open('temp_step_3c.sh', 'w') as fp:
+    temp_shname = ''.join(random.sample(string.ascii_letters + string.digits, 8)) + '.sh'
+    temp_shname = os.path.join('./', temp_shname)
+    with open(temp_shname, 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
         fp.write('cd ./LIP_JPPNet/\n')
         fp.write('python segment_by_parsing.py --img_file %s --out_dir %s\n' % (fname, out_dir))
         fp.write('cd ../\n')
-    call(['sh', './temp_step_3c.sh'])
-    os.remove('./temp_step_3c.sh')
-    os.remove('./LIP_JPPNet/segment_by_parsing.py')
+    call(['sh', temp_shname])
+    os.remove(temp_shname)
+    # os.remove('./LIP_JPPNet/segment_by_parsing.py')
 
 
 def optimize_smpl(fname, out_dir):
     print('\n\nStep 4 SMPL model optimization')
     shutil.copy('./fit_3d_accurate.py', './smplify_public/code/')
-    with open('temp_step_4.sh', 'w') as fp:
+    temp_shname = ''.join(random.sample(string.ascii_letters + string.digits, 8)) + '.sh'
+    temp_shname = os.path.join('./', temp_shname)
+    with open(temp_shname, 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
         fp.write('cd ./smplify_public/code\n')
         fp.write('python fit_3d_accurate.py --img_file %s --out_dir %s\n' % (fname, out_dir))
         fp.write('cd ../../\n')
-    call(['sh', './temp_step_4.sh'])
-    os.remove('./temp_step_4.sh')
-    os.remove('smplify_public/code/fit_3d_accurate.py')
+    call(['sh', temp_shname])
+    os.remove(temp_shname)
+    # os.remove('smplify_public/code/fit_3d_accurate.py')
 
 
 def main(img_fname, out_dir):
