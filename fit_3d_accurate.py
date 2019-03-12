@@ -386,6 +386,7 @@ def optimize_on_joints_and_silhouette(j2d,
     # run the optimization in 4 stages, progressively decreasing the
     # weights for the priors
     print('****** Optimization on joints')
+    curr_pose = sv.pose.r
     opt_weights = zip([4.04 * 1e2, 4.04 * 1e2, 57.4, 4.78],
                       [1e2, 5 * 1e1, 1e1, .5 * 1e1])
     for stage, (w, wbetas) in enumerate(opt_weights):
@@ -395,10 +396,11 @@ def optimize_on_joints_and_silhouette(j2d,
         objs['pose'] = pprior(w)
         objs['pose_exp'] = obj_angle(0.317 * w)
         objs['betas'] = wbetas * betas
+        objs['thetas'] = wbetas * (sv.pose - curr_pose) # constrain theta changes
 
         ch.minimize(objs, x0=[sv.betas, sv.pose],
                     method='dogleg', callback=None,
-                    options={'maxiter': 100, 'e_3': .0001, 'disp': 0})
+                    options={'maxiter': 100, 'e_3': .001, 'disp': 0})
     curr_pose = sv.pose.r
     # cam.v = ch.vstack([Jtr, sv.r])
 
@@ -434,7 +436,7 @@ def optimize_on_joints_and_silhouette(j2d,
         objs['thetas'] = wbetas * (sv.pose - curr_pose) # constrain theta changes
         ch.minimize(objs, x0=[sv.betas, sv.pose],
                     method='dogleg', callback=None,
-                    options={'maxiter': 100, 'e_3': .0001, 'disp': 0})
+                    options={'maxiter': 100, 'e_3': .001, 'disp': 0})
 
     return sv, cam.r, cam.t.r
 
