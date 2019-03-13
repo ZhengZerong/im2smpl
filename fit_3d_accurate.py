@@ -506,7 +506,8 @@ def proj_smpl_onto_img(img, smpl, pose, shape, cam_f, cam_t):
     for v in cam.r:
         r = int(round(v[1]))
         c = int(round(v[0]))
-        img[r, c, :] = np.asarray([255, 255, 255])
+        if 0 <= r < img.shape[0] and 0 <= c < img.shape[1]:
+            img[r, c, :] = np.asarray([255, 255, 255])
 
     return img
 
