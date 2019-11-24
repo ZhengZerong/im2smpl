@@ -77,7 +77,7 @@ def detect_human(fname, out_dir):
     with open(temp_shname, 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
         fp.write('cd ./AlphaPose/human-detection/tools\n')
-        fp.write('python detect_human.py --img_file %s --out_dir %s\n'
+        fp.write('python2 detect_human.py --img_file %s --out_dir %s\n'
                  % (fname, out_dir))
         fp.write('cd ../../../\n')
     call(['sh', temp_shname])
@@ -129,7 +129,7 @@ def infer_smpl_and_pose(fname, out_dir):
     with open(temp_shname, 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
         fp.write('cd ./hmr/\n')
-        fp.write('python infer_smpl.py --img_path %s --out_dir %s\n' % (fname, out_dir))
+        fp.write('python2 infer_smpl.py --img_path %s --out_dir %s\n' % (fname, out_dir))
         fp.write('cd ../\n')
     call(['sh', temp_shname])
     os.remove(temp_shname)
@@ -158,7 +158,7 @@ def infer_smpl_and_pose(fname, out_dir):
     with open(temp_shname, 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
         fp.write('cd ./LIP_JPPNet/\n')
-        fp.write('python segment_by_parsing.py --img_file %s --out_dir %s\n' % (fname, out_dir))
+        fp.write('python2 segment_by_parsing.py --img_file %s --out_dir %s\n' % (fname, out_dir))
         fp.write('cd ../\n')
     call(['sh', temp_shname])
     os.remove(temp_shname)
@@ -173,7 +173,7 @@ def optimize_smpl(fname, out_dir):
     with open(temp_shname, 'w') as fp:
         fp.write('#!/usr/local/bin/bash\n')
         fp.write('cd ./smplify_public/code\n')
-        fp.write('python fit_3d_accurate.py --img_file %s --out_dir %s\n' % (fname, out_dir))
+        fp.write('python2 fit_3d_accurate.py --img_file %s --out_dir %s\n' % (fname, out_dir))
         fp.write('cd ../../\n')
     call(['sh', temp_shname])
     os.remove(temp_shname)
