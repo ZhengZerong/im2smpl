@@ -87,7 +87,7 @@ By using this repository you agree to follow these licenses.
 
 > Copyright (c) 2019 Zerong Zheng, Tsinghua University
 > 
-> Please read carefully the following terms and conditions and any accompanying documentation before you download and/or use Im2smpl. By downloading and/or using the Software, you acknowledge that you have read these terms and conditions, understand them, and agree to be bound by them. If you do not agree with these terms and conditions, you must not download and/or use the Software.
+> Please read carefully the following terms and conditions and any accompanying documentation before you download and/or use Im2smpl software/data (the "Software"). By downloading and/or using the Software, you acknowledge that you have read these terms and conditions, understand them, and agree to be bound by them. If you do not agree with these terms and conditions, you must not download and/or use the Software.
 > 
 > **Ownership**
 > 
@@ -115,13 +115,13 @@ By using this repository you agree to follow these licenses.
 > 
 > You understand and agree that Tsinghua University is under no obligation to provide either maintenance services, update services, notices of latent defects, or corrections of defects with regard to the Software. Tsinghua University nevertheless reserves the right to update, modify, or discontinue the Software at any time.
 > 
-> **Publication with Im2smpl**
+> **Publication with the Software**
 > 
 > You agree to cite the paper describing the software and algorithm as specified on the download website.
 > 
-> **Media Projects with Im2smpl**
+> **Media Projects with the Software**
 > 
-> When using Im2smpl in a media project please give credit to Tsinghua University. For example: Im2smpl was used for performance capture courtesy of the Tsinghua University.
+> When using the Software in a media project please give credit to Tsinghua University. For example: the Software was used for performance capture courtesy of the Tsinghua University.
 > 
 > **Commercial Licensing Opportunities**
 > 
@@ -165,5 +165,13 @@ If you find the code useful in your work, you should cite the following papers:
   author = {Xiu, Yuliang and Li, Jiefeng and Wang, Haoyu and Fang, Yinghong and Lu, Cewu},
   booktitle={BMVC},
   year = {2018}
+}
+
+@InProceedings{Zheng2019DeepHuman, 
+    author = {Zheng, Zerong and Yu, Tao and Wei, Yixuan and Dai, Qionghai and Liu, Yebin},
+    title = {DeepHuman: 3D Human Reconstruction From a Single Image},
+    booktitle = {The IEEE International Conference on Computer Vision (ICCV)},
+    month = {October},
+    year = {2019}
 }
 ```
