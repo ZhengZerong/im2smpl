@@ -86,18 +86,46 @@ By using this repository you agree to follow these licenses.
 2. The other part of the code falls under the following license:
 
 > Copyright (c) 2019 Zerong Zheng, Tsinghua University
->
->Please read carefully the following terms and conditions and any accompanying documentation before you download and/or use this software and associated documentation files (the "Software").
->
->The authors hereby grant you a non-exclusive, non-transferable, free of charge right to copy, modify, merge, publish, distribute, and sublicense the Software for the sole purpose of performing non-commercial scientific research, non-commercial education, or non-commercial artistic projects.
->
->Any other use, in particular any use for commercial purposes, is prohibited. This includes, without limitation, incorporation in a commercial product, use in a commercial service, or production of other artefacts for commercial purposes.
->
->THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
->
->You understand and agree that the authors are under no obligation to provide either maintenance services, update services, notices of latent defects, or corrections of defects with regard to the Software. The authors nevertheless reserve the right to update, modify, or discontinue the Software at any time.
->
->The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. You agree to cite the DeepHuman: 3D Human Reconstruction from a Single Image paper in documents and papers that report on research using this Software.
+> 
+> Please read carefully the following terms and conditions and any accompanying documentation before you download and/or use Im2smpl. By downloading and/or using the Software, you acknowledge that you have read these terms and conditions, understand them, and agree to be bound by them. If you do not agree with these terms and conditions, you must not download and/or use the Software.
+> 
+> **Ownership**
+> 
+> The Software has been developed at the Tsinghua University and is owned by and proprietary material of the Tsinghua University.
+> 
+> **License Grant**
+> 
+> Tsinghua University grants you a non-exclusive, non-transferable, free of charge right:
+> 
+> To download the Software and use it on computers owned, leased or otherwise controlled by you and/or your organisation;
+> 
+> To use the Software for the sole purpose of performing non-commercial scientific research, non-commercial education, or non-commercial artistic projects.
+> 
+> Any other use, in particular any use for commercial purposes, is prohibited. This includes, without limitation, incorporation in a commercial product, use in a commercial service, as training data for a commercial product, for commercial ergonomic analysis (e.g. product design, architectural design, etc.), or production of other artifacts for commercial purposes including, for example, web services, movies, television programs, mobile applications, or video games. The Software may not be used for pornographic purposes or to generate pornographic material whether commercial or not. This license also prohibits the use of the Software to train methods/algorithms/neural networks/etc. for commercial use of any kind. The Software may not be reproduced, modified and/or made available in any form to any third party without Tsinghua University’s prior written permission. By downloading the Software, you agree not to reverse engineer it.
+> 
+> **Disclaimer of Representations and Warranties**
+> 
+> You expressly acknowledge and agree that the Software results from basic research, is provided “AS IS”, may contain errors, and that any use of the Software is at your sole risk. TSINGHUA UNIVERSITY MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, NEITHER EXPRESS NOR IMPLIED, AND THE ABSENCE OF ANY LEGAL OR ACTUAL DEFECTS, WHETHER DISCOVERABLE OR NOT. Specifically, and not to limit the foregoing, Tsinghua University makes no representations or warranties (i) regarding the merchantability or fitness for a particular purpose of the Software, (ii) that the use of the Software will not infringe any patents, copyrights or other intellectual property rights of a third party, and (iii) that the use of the Software will not cause any damage of any kind to you or a third party.
+> 
+> **Limitation of Liability**
+> 
+> Under no circumstances shall Tsinghua University be liable for any incidental, special, indirect or consequential damages arising out of or relating to this license, including but not limited to, any lost profits, business interruption, loss of programs or other data, or all other commercial damages or losses, even if advised of the possibility thereof.
+> 
+> **No Maintenance Services**
+> 
+> You understand and agree that Tsinghua University is under no obligation to provide either maintenance services, update services, notices of latent defects, or corrections of defects with regard to the Software. Tsinghua University nevertheless reserves the right to update, modify, or discontinue the Software at any time.
+> 
+> **Publication with Im2smpl**
+> 
+> You agree to cite the paper describing the software and algorithm as specified on the download website.
+> 
+> **Media Projects with Im2smpl**
+> 
+> When using Im2smpl in a media project please give credit to Tsinghua University. For example: Im2smpl was used for performance capture courtesy of the Tsinghua University.
+> 
+> **Commercial Licensing Opportunities**
+> 
+> For commercial use and commercial license please contact: liuyebin@mail.tsinghua.edu.cn.
 
 ### Citation
 If you find the code useful in your work, you should cite the following papers:
