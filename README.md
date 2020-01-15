@@ -8,13 +8,13 @@ git clone https://github.com/ZhengZerong/im2smpl.git
 cd ./im2smpl
 ```
 
-2. Setup AlphaPose in `./AlphaPose/` according to [this guidance](https://github.com/MVIG-SJTU/AlphaPose/blob/master/README.md#installation). 
-After that, run the official demo script (`./AlphaPose/run.sh`) to make sure AlphaPose is properly setup. 
+2. Set up my focked **AlphaPose** according to [this guidance](https://github.com/ZhengZerong/AlphaPose). 
+After that, run the official demo script (`./AlphaPose/run.sh`) to make sure AlphaPose is properly setup. Please don't use the authors' repository because they have renewed the code and their implementation has compatibility issues with our code.  
 
-3. Setup HMR in `./HMR/` according to [this guidance](https://github.com/akanazawa/hmr/blob/master/README.md). 
+3. Setup **HMR** in `./HMR/` according to [this guidance](https://github.com/akanazawa/hmr/blob/master/README.md). 
 After that, run the official demo script (`./HMR/demo.py`) to make sure HMR is properly setup. 
 
-4. Setup LIP in `./LIP_JPPNet/` according to [this guidance](https://github.com/Engineering-Course/LIP_JPPNet/blob/master/README.md). 
+4. Setup **LIP** in `./LIP_JPPNet/` according to [this guidance](https://github.com/Engineering-Course/LIP_JPPNet/blob/master/README.md). 
 After that, run the official demo script (`./LIP_JPPNet/evaluate_parsing_JPPNet-s2.py`) to make sure LIP is properly setup.  
 
 5. If setup properly, the folder structure should look like:
