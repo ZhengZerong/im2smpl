@@ -8,7 +8,7 @@ git clone https://github.com/ZhengZerong/im2smpl.git
 cd ./im2smpl
 ```
 
-2. Set up my focked **AlphaPose** according to [this guidance](https://github.com/ZhengZerong/AlphaPose). 
+2. Set up my forked **AlphaPose** according to [this guidance](https://github.com/ZhengZerong/AlphaPose). 
 After that, run the official demo script (`./AlphaPose/run.sh`) to make sure AlphaPose is properly setup. Please don't use the authors' repository because they have renewed the code and their implementation has compatibility issues with our code.  
 
 3. Setup **HMR** in `./HMR/` according to [this guidance](https://github.com/akanazawa/hmr/blob/master/README.md). 
